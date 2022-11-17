@@ -34,6 +34,8 @@ class Starships() : Application() {
 
         facade.timeListenable.addEventListener(TimeListener(facade.elements))
         facade.collisionsListenable.addEventListener(CollisionListener())
+        facade.outOfBoundsListenable.addEventListener(OutOfBoundsListener())
+        facade.reachBoundsListenable.addEventListener(ReachBoundsListener())
         keyTracker.keyPressedListenable.addEventListener(KeyPressedListener(starship))
 
         val scene = Scene(facade.view)
@@ -77,10 +79,23 @@ class TimeListener(private val elements: Map<String, ElementModel>) : EventListe
 
 class CollisionListener() : EventListener<Collision> {
     override fun handle(event: Collision) {
-        println("${event.element1Id} ${event.element2Id}")
+        println("Collision between: ${event.element1Id} ${event.element2Id}")
     }
 
 }
+
+class OutOfBoundsListener() : EventListener<OutOfBounds> {
+    override fun handle(event: OutOfBounds) {
+        println("Element has gone out of bounds: ${event.id}")
+    }
+}
+
+class ReachBoundsListener() : EventListener<ReachBounds> {
+    override fun handle(event: ReachBounds) {
+        println("Element has reach bounds: ${event.id}")
+    }
+}
+
 
 class KeyPressedListener(private val starship: ElementModel): EventListener<KeyPressed> {
     override fun handle(event: KeyPressed) {

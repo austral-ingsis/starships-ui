@@ -12,6 +12,10 @@ data class KeyReleased(val key: KeyCode, val currentPressedKeys: Set<KeyCode>)
 
 data class TimePassed(val currentTimeInSeconds: Double, val secondsSinceLastTime: Double)
 
+data class OutOfBounds(val id: String)
+
+data class ReachBounds(val id: String)
+
 interface EventEmitter<E> {
     fun emit(event: E)
 }

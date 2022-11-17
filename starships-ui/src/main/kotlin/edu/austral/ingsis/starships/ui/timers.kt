@@ -15,19 +15,33 @@ class TimePassedTimer(private val emitter: EventEmitter<TimePassed>) : Animation
     }
 }
 
-class CollisionTimer(private val emitter: EventEmitter<Collision>, private val view: ElementsView) : AnimationTimer() {
-    private val collisionSet = mutableSetOf<Collision>()
+class ViewEventsTime<E>(
+    private val rawEventGenerator: (ElementsView) -> Set<E>,
+    private val emitter: EventEmitter<E>,
+    private val view: ElementsView
+) : AnimationTimer() {
+    private val eventSet = mutableSetOf<E>()
 
     override fun handle(now: Long) {
-        val currentCollisions = view.checkCollisions().toSet()
+        val currentEvents = rawEventGenerator(view)
 
-        val newCollisions = currentCollisions.filterNot { collisionSet.contains(it) }
-        val collisionsToRemove = collisionSet.toSet().filterNot { currentCollisions.contains(it) }
+        val newEvents = currentEvents.filterNot { eventSet.contains(it) }
+        val eventsToRemove = eventSet.toSet().filterNot { currentEvents.contains(it) }
 
-        collisionSet.removeAll(collisionsToRemove.toSet())
-        collisionSet.addAll(newCollisions)
+        eventSet.removeAll(eventsToRemove.toSet())
+        eventSet.addAll(newEvents)
 
-        newCollisions.forEach { emitter.emit(it) }
+        newEvents.forEach { emitter.emit(it) }
+    }
 
+    companion object {
+        fun createCollisionTimer(emitter: EventEmitter<Collision>, view: ElementsView): ViewEventsTime<Collision> =
+            ViewEventsTime({ it.checkCollisions() }, emitter, view)
+
+        fun createOutOfBoundsTimer(emitter: EventEmitter<OutOfBounds>, view: ElementsView): ViewEventsTime<OutOfBounds> =
+            ViewEventsTime({ it.checkOutOfBounds() }, emitter, view)
+
+        fun createReachBoundsTimer(emitter: EventEmitter<ReachBounds>, view: ElementsView): ViewEventsTime<ReachBounds> =
+            ViewEventsTime({ it.checkReachBounds() }, emitter, view)
     }
 }

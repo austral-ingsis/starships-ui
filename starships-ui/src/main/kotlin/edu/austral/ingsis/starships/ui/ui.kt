@@ -173,7 +173,7 @@ class TriangularColliderView(
 }
 
 class ElementView(
-    element: ElementModel,
+    val element: ElementModel,
     private val showCollider: BooleanProperty,
     private val imageResolver: ImageResolver
 ) : StackPane() {
@@ -272,6 +272,23 @@ class ElementsView(
 
     private fun renderElement(element: ElementModel): ElementView = ElementView(element, showCollider, imageResolver)
 
-    fun checkCollisions(): List<Collision> = collisionEngine.checkCollisions(elementViews.map { it.collider.value })
+    fun checkCollisions(): Set<Collision> =
+        collisionEngine.checkCollisions(elementViews.map { it.collider.value }).toSet()
+
+    fun checkOutOfBounds(): Set<OutOfBounds> = elementViews.toList()
+        .filter(::isNotInBounds)
+        .map { OutOfBounds(it.element.id) }
+        .toSet()
+
+    private fun isNotInBounds(node: Node) =
+        !layoutBounds.contains(node.boundsInParent) and !layoutBounds.intersects(node.boundsInParent)
+
+    fun checkReachBounds(): Set<ReachBounds> = elementViews.toList()
+        .filter(::hasReachBounds)
+        .map { ReachBounds(it.element.id) }
+        .toSet()
+
+    private fun hasReachBounds(node: Node) =
+        !layoutBounds.contains(node.boundsInParent) and layoutBounds.intersects(node.boundsInParent)
 }
 
